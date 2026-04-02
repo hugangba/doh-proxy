@@ -1,0 +1,15 @@
+{
+  "domains": {
+    "example.com": {
+      "ip4": ["1.1.1.1", "1.0.0.1"],
+      "ip6": ["2606:4700:4700::1111"],
+      "ech": "AEj+DQBEAQAgACAdd+scUi0IYFsXnUIU7ko2Nd9+F8M26pAGZVpz/KrWPgAEAAEAAWQVZWNoLXB1YmxpYy5hdG1ldGEuY29tAAA="
+    },
+    "translate.google.com": {
+      "ip6": ["2001:470:8935:9::2"]
+    }
+    "translate-pa.googleapis.com": {
+      "ip6": ["2001:470:8935:9::2"]
+    }
+  }
+}
