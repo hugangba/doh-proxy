@@ -71,7 +71,7 @@ PORT=3000 REMOTE_CONFIG_URL="https://raw.githubusercontent.com/user/repo/main/co
       "ech": "你的ECH配置Base64字符串"
     },
     "translate.google.com": {
-      "ip6": ["2001:470:8935:9::2"]
+      "ip6": ["2001:470::2"]
     }
   }
 }
