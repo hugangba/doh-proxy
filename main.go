@@ -15,6 +15,8 @@ func main() {
 	remoteUrl := os.Getenv("REMOTE_CONFIG_URL")
 	if remoteUrl != "" {
 		log.Printf("Remote config enabled: %s", remoteUrl)
+		// 首次同步获取，确保启动时配置已加载，防止启动瞬间的 DNS 泄漏
+		updateRemoteConfig(remoteUrl)
 		startRemoteConfigUpdater(remoteUrl)
 	}
 
