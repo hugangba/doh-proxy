@@ -27,34 +27,57 @@ func handleDnsQuery(rawBuffer []byte, config Config) ([]byte, error) {
 
 	// 1. 远程自定义解析优先
 	remoteConfigMutex.RLock()
-	custom, exists := remoteConfig.Domains[qName]
+	var custom CustomResolution
+	var exists bool
+	parts := strings.Split(qName, ".")
+	for i := 0; i < len(parts); i++ {
+		domainToCheck := strings.Join(parts[i:], ".")
+		if c, ok := remoteConfig.Domains[domainToCheck]; ok {
+			custom = c
+			exists = true
+			break
+		}
+	}
 	remoteConfigMutex.RUnlock()
 
 	if exists {
 		// 处理 IPv4 (A 记录)
-		if qType == 1 && len(custom.IP4) > 0 {
+		if qType == 1 {
 			var ips [][]byte
-			for _, ip := range custom.IP4 {
-				if b := ipToBytes(ip); b != nil { ips = append(ips, b) }
+			if len(custom.IP4) > 0 {
+				for _, ip := range custom.IP4 {
+					if b := ipToBytes(ip); b != nil { ips = append(ips, b) }
+				}
+			} else {
+				ips = append(ips, ipToBytes("0.0.0.0"))
 			}
 			return createMultiAnsResponse(id, qName, 1, ips, 300), nil
 		}
-		// 处理 IPv6 (AAAA 记录) - 之前漏掉了这里
-		if qType == 28 && len(custom.IP6) > 0 {
+		// 处理 IPv6 (AAAA 记录)
+		if qType == 28 {
 			var ips [][]byte
-			for _, ip := range custom.IP6 {
-				if b := ipToBytes(ip); b != nil { ips = append(ips, b) }
+			if len(custom.IP6) > 0 {
+				for _, ip := range custom.IP6 {
+					if b := ipToBytes(ip); b != nil { ips = append(ips, b) }
+				}
+			} else {
+				ips = append(ips, ipToBytes("::"))
 			}
 			return createMultiAnsResponse(id, qName, 28, ips, 300), nil
 		}
 		// 处理 ECH (HTTPS 记录)
-		if qType == 65 && custom.ECH != "" {
-			echRdata := packHttpsParams(1, ".", []SvcParam{
-				{Key: "alpn", Val: "h2,h3"},
-				{Key: "ech", Val: custom.ECH},
-			})
-			return createMultiAnsResponse(id, qName, 65, [][]byte{echRdata}, 300), nil
+		if qType == 65 {
+			if custom.ECH != "" {
+				echRdata := packHttpsParams(1, ".", []SvcParam{
+					{Key: "alpn", Val: "h2,h3"},
+					{Key: "ech", Val: custom.ECH},
+				})
+				return createMultiAnsResponse(id, qName, 65, [][]byte{echRdata}, 300), nil
+			}
+			return createMultiAnsResponse(id, qName, 65, nil, 300), nil
 		}
+		// 其他类型直接返回空答案，防止泄漏
+		return createMultiAnsResponse(id, qName, qType, nil, 300), nil
 	}
 
 	// 2. 虚拟域名逻辑
