@@ -3,8 +3,8 @@ package main
 import "net/netip"
 
 const (
-	UPSTREAM_DNS       = "https://dns.google/dns-query"
-	UPSTREAM_JSON      = "https://dns.google/resolve"
+	UPSTREAM_DNS       = "https://8.8.8.8/dns-query"
+	UPSTREAM_JSON      = "https://8.8.8.8/resolve"
 	API_PATH           = "/doh-ech-proxy"
 	TEST_PATH          = "/doh-proxy"
 	DEFAULT_TWITTER_IP = "104.18.10.118"
