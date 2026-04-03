@@ -96,6 +96,14 @@ func handleDnsQuery(rawBuffer []byte, config Config) ([]byte, error) {
 				replaceIps = [][]byte{ipToBytes(DEFAULT_TWITTER_IP)}
 			}
 			return createMultiAnsResponse(id, qName, 1, replaceIps, 300), nil
+		} else if qType == 28 && config.Ip6 != "" {
+			var replaceIps [][]byte
+			for _, ip := range strings.Split(config.Ip6, ",") {
+				if b := ipToBytes(ip); b != nil { replaceIps = append(replaceIps, b) }
+			}
+			if len(replaceIps) > 0 {
+				return createMultiAnsResponse(id, qName, 28, replaceIps, 300), nil
+			}
 		}
 	}
 
@@ -106,7 +114,22 @@ func handleDnsQuery(rawBuffer []byte, config Config) ([]byte, error) {
 		ownerData, probedIps = activeProbeOwner(qName)
 	}
 
-	if (qType == 1 || qType == 28) && ownerData == "META" {
+	if (qType == 1 || qType == 28) && (ownerData == "META" || ownerData == "CF") {
+		var replaceIps [][]byte
+		if qType == 1 && config.Ip4 != "" {
+			for _, ip := range strings.Split(config.Ip4, ",") {
+				if b := ipToBytes(ip); b != nil { replaceIps = append(replaceIps, b) }
+			}
+		} else if qType == 28 && config.Ip6 != "" {
+			for _, ip := range strings.Split(config.Ip6, ",") {
+				if b := ipToBytes(ip); b != nil { replaceIps = append(replaceIps, b) }
+			}
+		}
+
+		if len(replaceIps) > 0 {
+			return createMultiAnsResponse(id, qName, qType, replaceIps, 300), nil
+		}
+
 		var rawIps [][]byte
 		// 如果有探测到的 IP 则使用，否则转发获取
 		if len(probedIps) > 0 {
@@ -128,6 +151,13 @@ func handleDnsQuery(rawBuffer []byte, config Config) ([]byte, error) {
 			{Key: "ech", Val: META_ECH_CONFIG},
 		})
 		return createMultiAnsResponse(id, qName, 65, [][]byte{echRdata}, 300), nil
+	}
+
+	if qType == 65 && ownerData == "CF" {
+		echRdata := fetchCleanEchRdata(config.EchDomain)
+		if echRdata != nil {
+			return createMultiAnsResponse(id, qName, 65, [][]byte{echRdata}, 300), nil
+		}
 	}
 
 	return forwardAndRead(rawBuffer)
@@ -159,6 +189,10 @@ func activeProbeOwner(domain string) (string, []string) {
 
 // 补全 ECH 获取逻辑
 func fetchCleanEchRdata(domain string) []byte {
+	if cached := getEchFromCache(domain); cached != nil {
+		return cached
+	}
+
 	req, _ := http.NewRequest("GET", UPSTREAM_JSON+"?name="+domain+"&type=65", nil)
 	req.Header.Set("Accept", "application/dns-json")
 	resp, err := http.DefaultClient.Do(req)
@@ -186,7 +220,9 @@ func fetchCleanEchRdata(domain string) []byte {
 						}
 					}
 				}
-				return packHttpsParams(uint16(priority), target, params)
+				res := packHttpsParams(uint16(priority), target, params)
+				setEchCache(domain, res)
+				return res
 			}
 		}
 	}
