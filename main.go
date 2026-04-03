@@ -33,7 +33,7 @@ func main() {
 func handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// 处理 /doh-ech-test 逻辑
+	// 处理 /doh-ech-proxy 逻辑
 	if r.URL.Path == API_PATH {
 		config := Config{
 			Ip4:       r.URL.Query().Get("ip4"),
@@ -73,7 +73,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 处理 /doh-test 逻辑
+	// 处理 /doh-proxy 逻辑
 	if r.URL.Path == TEST_PATH {
 		if r.Method == "POST" {
 			body, _ := io.ReadAll(r.Body)
