@@ -26,8 +26,9 @@ var (
 func startRemoteConfigUpdater(url string) {
 	go func() {
 		for {
-			updateRemoteConfig(url)
+			// 先睡眠，因为启动时已经同步获取过一次了
 			time.Sleep(10 * time.Minute)
+			updateRemoteConfig(url)
 		}
 	}()
 }
