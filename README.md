@@ -52,7 +52,7 @@ go build -o doh-proxy
 
 **示例：**
 ```bash
-PORT=3000 REMOTE_CONFIG_URL="https://raw.githubusercontent.com/user/repo/main/config.json" go run .
+PORT=3000 REMOTE_CONFIG_URL="https://raw.githubusercontent.com/hugangba/doh-proxy/main/config.json" go run .
 ```
 
 ## 📄 远程 JSON 配置格式
