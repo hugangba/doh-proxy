@@ -84,13 +84,6 @@ curl -H "accept: application/dns-message" \
 "http://localhost:8080/doh-proxy?dns=q80BAAABAAAAAAAAA3d3dwdnb29nbGUDY29tAAABAAE"
 ```
 
-### 测试自定义 IPv6 解析
-```bash
-# 查询 translate.google.com 的 AAAA 记录
-curl -H "accept: application/dns-message" \
-"http://localhost:8080/doh-ech-proxy?dns=AAABAAABAAAAAAAACXRyYW5zbGF0ZQZnb29nbGUDY29tAAAcAAE" | hexdump -C
-```
-
 ### 测试 Twitter 劫持
 ```bash
 # 查询 twitter.com 的 A 记录
