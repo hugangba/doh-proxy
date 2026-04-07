@@ -33,10 +33,7 @@
 go mod init doh-proxy
 ```
 
-### 3. 配置 CIDR 数据
-打开 `config.go`，将原有的 `RAW_META_CIDRS` 和 `RAW_CF_CIDRS` 列表替换为你完整的 CIDR 数据（确保使用双引号 `"`）。
-
-### 4. 运行程序
+### 3. 运行程序
 ```bash
 # 直接运行
 go run .
